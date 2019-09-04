@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
  * This wraps the old Swing commands so that they fit into the new infrastructure.
  * In the long term, this class should be removed.
  */
+@Deprecated
 public class OldCommandWrapper extends CommandBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OldCommandWrapper.class);
@@ -46,5 +47,10 @@ public class OldCommandWrapper extends CommandBase {
 
     public void setExecutable(boolean executable) {
         this.executable.bind(BindingsHelper.constantOf(executable));
+    }
+
+    @Override
+    public String toString() {
+        return this.command.toString();
     }
 }

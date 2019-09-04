@@ -3,6 +3,7 @@ package org.jabref.gui.actions;
 /**
  * Global String constants for GUI actions
  */
+@Deprecated
 public enum Actions {
 
     ABBREVIATE_ISO,
@@ -48,7 +49,6 @@ public enum Actions {
     SELECT_ALL,
     SEND_AS_EMAIL,
     TOGGLE_GROUPS,
-    TOGGLE_PREVIEW,
     UNABBREVIATE,
     UNDO,
     WRITE_XMP,

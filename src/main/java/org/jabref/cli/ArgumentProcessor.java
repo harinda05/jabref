@@ -44,7 +44,6 @@ import org.jabref.logic.shared.prefs.SharedDatabasePreferences;
 import org.jabref.logic.util.OS;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.Defaults;
-import org.jabref.model.EntryTypes;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.BibDatabaseMode;
@@ -64,7 +63,7 @@ public class ArgumentProcessor {
     private final Mode startupMode;
     private boolean noGUINeeded;
 
-    public ArgumentProcessor(String[] args, Mode startupMode) {
+    public ArgumentProcessor(String[] args, Mode startupMode) throws org.apache.commons.cli.ParseException {
         cli = new JabRefCLI(args);
         this.startupMode = startupMode;
         parserResults = processArguments();
@@ -176,7 +175,7 @@ public class ArgumentProcessor {
         }
 
         if ((startupMode == Mode.INITIAL_START) && cli.isHelp()) {
-            cli.printUsage();
+            JabRefCLI.printUsage();
             noGUINeeded = true;
             return Collections.emptyList();
         }
@@ -391,7 +390,7 @@ public class ArgumentProcessor {
             System.out.println(Localization.lang("Saving") + ": " + subName);
             SavePreferences prefs = Globals.prefs.loadForSaveFromPreferences();
             AtomicFileWriter fileWriter = new AtomicFileWriter(Paths.get(subName), prefs.getEncoding());
-            BibDatabaseWriter databaseWriter = new BibtexDatabaseWriter(fileWriter, prefs);
+            BibDatabaseWriter databaseWriter = new BibtexDatabaseWriter(fileWriter, prefs, Globals.entryTypesManager);
             Defaults defaults = new Defaults(Globals.prefs.getDefaultBibDatabaseMode());
             databaseWriter.saveDatabase(new BibDatabaseContext(newBase, defaults));
 
@@ -458,8 +457,8 @@ public class ArgumentProcessor {
     private void importPreferences() {
         try {
             Globals.prefs.importPreferences(cli.getPreferencesImport());
-            EntryTypes.loadCustomEntryTypes(Globals.prefs.loadCustomEntryTypes(BibDatabaseMode.BIBTEX),
-                    Globals.prefs.loadCustomEntryTypes(BibDatabaseMode.BIBLATEX));
+            Globals.entryTypesManager.addCustomizedEntryTypes(Globals.prefs.loadBibEntryTypes(BibDatabaseMode.BIBTEX),
+                    Globals.prefs.loadBibEntryTypes(BibDatabaseMode.BIBLATEX));
             List<TemplateExporter> customExporters = Globals.prefs.getCustomExportFormats(Globals.journalAbbreviationLoader);
             LayoutFormatterPreferences layoutPreferences = Globals.prefs
                     .getLayoutFormatterPreferences(Globals.journalAbbreviationLoader);

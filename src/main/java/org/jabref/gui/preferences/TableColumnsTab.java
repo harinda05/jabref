@@ -36,13 +36,13 @@ import org.jabref.gui.actions.StandardActions;
 import org.jabref.gui.externalfiletype.ExternalFileType;
 import org.jabref.gui.externalfiletype.ExternalFileTypes;
 import org.jabref.gui.help.HelpAction;
+import org.jabref.gui.maintable.ColumnPreferences;
 import org.jabref.gui.util.DefaultTaskExecutor;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.entry.BibtexSingleField;
 import org.jabref.preferences.JabRefPreferences;
 
-class TableColumnsTab extends Pane implements PrefsTab {
+class TableColumnsTab extends Pane implements PreferencesTab {
 
     private final JabRefPreferences prefs;
     private boolean tableChanged;
@@ -316,6 +316,9 @@ class TableColumnsTab extends Pane implements PrefsTab {
         if (extraFileColumns.isSelected()) {
             List<String> desiredColumns = prefs.getStringList(JabRefPreferences.LIST_OF_FILE_COLUMNS);
             int listSize = listOfFileColumns.getSelectionModel().getSelectedIndex();
+            if (listSize < 0) {
+                listSize = 0;
+            }
             int[] indicesToSelect = new int[listSize];
             for (int i = 0; i < listSize; i++) {
                 indicesToSelect[i] = listSize + 1;
@@ -383,12 +386,12 @@ class TableColumnsTab extends Pane implements PrefsTab {
 
         public TableRow() {
             name = new SimpleStringProperty("");
-            length = new SimpleDoubleProperty(BibtexSingleField.DEFAULT_FIELD_LENGTH);
+            length = new SimpleDoubleProperty(ColumnPreferences.DEFAULT_FIELD_LENGTH);
         }
 
         public TableRow(String name) {
             this.name = new SimpleStringProperty(name);
-            length = new SimpleDoubleProperty(BibtexSingleField.DEFAULT_FIELD_LENGTH);
+            length = new SimpleDoubleProperty(ColumnPreferences.DEFAULT_FIELD_LENGTH);
         }
 
         public TableRow(String name, double length) {
@@ -502,7 +505,7 @@ class TableColumnsTab extends Pane implements PrefsTab {
 
             for (TableRow tr : data) {
                 names.add(tr.getName().toLowerCase(Locale.ROOT));
-                widths.add(String.valueOf(tr.getLength()));
+                widths.add(String.valueOf(Double.valueOf(tr.getLength()).intValue()));
             }
 
             // Finally, we store the new preferences.
@@ -522,14 +525,14 @@ class TableColumnsTab extends Pane implements PrefsTab {
         final HashMap<String, Integer> map = new HashMap<>();
 
         // first element (#) not inside data
-            /*
-            for (TableColumn<BibEntry, ?> column : panel.getMainTable().getColumns()) {
-                String name = column.getText();
-                if ((name != null) && !name.isEmpty()) {
-                    map.put(name.toLowerCase(Locale.ROOT), i);
-                }
+        /*
+        for (TableColumn<BibEntry, ?> column : panel.getMainTable().getColumns()) {
+            String name = column.getText();
+            if ((name != null) && !name.isEmpty()) {
+                map.put(name.toLowerCase(Locale.ROOT), i);
             }
-            */
+        }
+        */
         data.sort((o1, o2) -> {
             Integer n1 = map.get(o1.getName());
             Integer n2 = map.get(o2.getName());
@@ -553,4 +556,7 @@ class TableColumnsTab extends Pane implements PrefsTab {
     public String getTabName() {
         return Localization.lang("Entry table columns");
     }
+
+    @Override
+    public List<String> getRestartWarnings() { return new ArrayList<>(); }
 }

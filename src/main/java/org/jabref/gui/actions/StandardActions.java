@@ -85,6 +85,7 @@ public enum StandardActions implements Action {
     TOOGLE_OO(Localization.lang("OpenOffice/LibreOffice"), IconTheme.JabRefIcons.FILE_OPENOFFICE, KeyBinding.OPEN_OPEN_OFFICE_LIBRE_OFFICE_CONNECTION),
     TOGGLE_WEB_SEARCH(Localization.lang("Web search"), Localization.lang("Toggle web search interface"), IconTheme.JabRefIcons.WWW, KeyBinding.WEB_SEARCH),
 
+    PARSE_TEX(Localization.lang("Search for Citations in LaTeX Files"), IconTheme.JabRefIcons.LATEX_CITATIONS),
     NEW_SUB_LIBRARY_FROM_AUX(Localization.lang("New sublibrary based on AUX file") + "...", Localization.lang("New BibTeX sublibrary") + Localization.lang("This feature generates a new library based on which entries are needed in an existing LaTeX document."), IconTheme.JabRefIcons.NEW),
     WRITE_XMP(Localization.lang("Write XMP-metadata to PDFs"), Localization.lang("Will write XMP-metadata to the PDFs linked from selected entries."), KeyBinding.WRITE_XMP),
     OPEN_FOLDER(Localization.lang("Open folder"), Localization.lang("Open folder"), KeyBinding.OPEN_FOLDER),
@@ -112,13 +113,12 @@ public enum StandardActions implements Action {
 
     EDIT_ENTRY(Localization.lang("Open entry editor"), IconTheme.JabRefIcons.EDIT_ENTRY, KeyBinding.EDIT_ENTRY),
     SHOW_PDF_VIEWER(Localization.lang("Open document viewer"), IconTheme.JabRefIcons.PDF_FILE),
-    TOGGLE_PREVIEW(Localization.lang("Entry preview"), IconTheme.JabRefIcons.TOGGLE_ENTRY_PREVIEW, KeyBinding.TOGGLE_ENTRY_PREVIEW),
     NEXT_PREVIEW_STYLE(Localization.lang("Next citation style"), KeyBinding.NEXT_PREVIEW_LAYOUT),
     PREVIOUS_PREVIEW_STYLE(Localization.lang("Previous citation style"), KeyBinding.PREVIOUS_PREVIEW_LAYOUT),
     SELECT_ALL(Localization.lang("Select all"), KeyBinding.SELECT_ALL),
 
     NEW_ENTRY(Localization.lang("New entry"), IconTheme.JabRefIcons.ADD_ENTRY, KeyBinding.NEW_ENTRY),
-    NEW_ARTICLE(Localization.lang("New article"), IconTheme.JabRefIcons.ADD_ENTRY),
+    NEW_ARTICLE(Localization.lang("New article"), IconTheme.JabRefIcons.ADD_ARTICLE),
     NEW_ENTRY_FROM_PLAINTEX(Localization.lang("New entry from plain text"), KeyBinding.NEW_FROM_PLAIN_TEXT),
     LIBRARY_PROPERTIES(Localization.lang("Library properties")),
     EDIT_PREAMBLE(Localization.lang("Edit preamble")),
@@ -137,6 +137,7 @@ public enum StandardActions implements Action {
     DOWNLOAD_FULL_TEXT(Localization.lang("Search full text documents online"), IconTheme.JabRefIcons.FILE_SEARCH, KeyBinding.DOWNLOAD_FULL_TEXT),
     CLEANUP_ENTRIES(Localization.lang("Cleanup entries"), IconTheme.JabRefIcons.CLEANUP_ENTRIES, KeyBinding.CLEANUP),
     SET_FILE_LINKS(Localization.lang("Automatically set file links"), KeyBinding.AUTOMATICALLY_LINK_FILES),
+    EXTRACT_BIBTEX(Localization.lang("Extract BibTeX from plain text")),
 
     HELP(Localization.lang("Online help"), IconTheme.JabRefIcons.HELP, KeyBinding.HELP),
     HELP_KEY_PATTERNS(Localization.lang("Help on key patterns"), IconTheme.JabRefIcons.HELP, KeyBinding.HELP),

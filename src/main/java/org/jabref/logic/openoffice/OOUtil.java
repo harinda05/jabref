@@ -9,11 +9,12 @@ import java.util.regex.Pattern;
 import org.jabref.logic.layout.Layout;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.field.Field;
+import org.jabref.model.entry.field.UnknownField;
 
 import com.sun.star.beans.PropertyVetoException;
 import com.sun.star.beans.UnknownPropertyException;
 import com.sun.star.beans.XPropertySet;
-import com.sun.star.lang.IllegalArgumentException;
 import com.sun.star.lang.WrappedTargetException;
 import com.sun.star.text.ControlCharacter;
 import com.sun.star.text.XParagraphCursor;
@@ -48,7 +49,7 @@ public class OOUtil {
 
     private static final Pattern HTML_TAG = Pattern.compile("</?[a-z]+>");
 
-    private static final String UNIQUEFIER_FIELD = "uniq";
+    private static final Field UNIQUEFIER_FIELD = new UnknownField("uniq");
 
     private OOUtil() {
         // Just to hide the public constructor
@@ -65,9 +66,9 @@ public class OOUtil {
      * @param uniquefier Uniqiefier letter, if any, to append to the entry's year.
      */
     public static void insertFullReferenceAtCurrentLocation(XText text, XTextCursor cursor,
-            Layout layout, String parStyle, BibEntry entry, BibDatabase database, String uniquefier)
+                                                            Layout layout, String parStyle, BibEntry entry, BibDatabase database, String uniquefier)
                     throws UndefinedParagraphFormatException, UnknownPropertyException, PropertyVetoException,
-                    WrappedTargetException, IllegalArgumentException {
+            WrappedTargetException, IllegalArgumentException {
 
         // Backup the value of the uniq field, just in case the entry already has it:
         Optional<String> oldUniqVal = entry.getField(UNIQUEFIER_FIELD);

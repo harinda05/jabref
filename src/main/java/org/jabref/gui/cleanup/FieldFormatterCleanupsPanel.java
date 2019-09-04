@@ -1,9 +1,11 @@
 package org.jabref.gui.cleanup;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,8 +31,9 @@ import org.jabref.model.cleanup.FieldFormatterCleanup;
 import org.jabref.model.cleanup.FieldFormatterCleanups;
 import org.jabref.model.cleanup.Formatter;
 import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.InternalBibtexFields;
+import org.jabref.model.entry.field.Field;
+import org.jabref.model.entry.field.FieldFactory;
+import org.jabref.model.entry.field.InternalField;
 import org.jabref.model.metadata.MetaData;
 
 import org.fxmisc.easybind.EasyBind;
@@ -39,6 +42,8 @@ public class FieldFormatterCleanupsPanel extends GridPane {
 
     private static final String DESCRIPTION = Localization.lang("Description") + ": ";
     private final CheckBox cleanupEnabled;
+    private final FieldFormatterCleanups defaultFormatters;
+    private final List<Formatter> availableFormatters;
     private FieldFormatterCleanups fieldFormatterCleanups;
     private ListView<FieldFormatterCleanup> actionsList;
     private ComboBox<Formatter> formattersCombobox;
@@ -48,9 +53,6 @@ public class FieldFormatterCleanupsPanel extends GridPane {
     private Button removeButton;
     private Button resetButton;
     private Button recommendButton;
-
-    private final FieldFormatterCleanups defaultFormatters;
-    private final List<Formatter> availableFormatters;
     private ObservableList<FieldFormatterCleanup> actions;
 
     public FieldFormatterCleanupsPanel(String description, FieldFormatterCleanups defaultFormatters) {
@@ -103,8 +105,8 @@ public class FieldFormatterCleanupsPanel extends GridPane {
         actionsList = new ListView<>(actions);
         actionsList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         new ViewModelListCellFactory<FieldFormatterCleanup>()
-                .withText(action -> action.getField() + ": " + action.getFormatter().getName())
-                .withTooltip(action -> action.getFormatter().getDescription())
+                .withText(action -> action.getField().getDisplayName() + ": " + action.getFormatter().getName())
+                .withStringTooltip(action -> action.getFormatter().getDescription())
                 .install(actionsList);
         add(actionsList, 1, 1, 3, 1);
 
@@ -161,17 +163,17 @@ public class FieldFormatterCleanupsPanel extends GridPane {
      */
     private GridPane getSelectorPanel() {
         GridPane builder = new GridPane();
-        List<String> fieldNames = InternalBibtexFields.getAllPublicAndInternalFieldNames();
-        fieldNames.add(BibEntry.KEY_FIELD);
-        Collections.sort(fieldNames);
-        selectFieldCombobox = new ComboBox<>(FXCollections.observableArrayList(fieldNames));
+        Set<Field> fields = FieldFactory.getCommonFields();
+        fields.add(InternalField.KEY_FIELD);
+        Set<String> fieldsString = fields.stream().map(Field::getDisplayName).sorted().collect(Collectors.toCollection(TreeSet::new));
+        selectFieldCombobox = new ComboBox<>(FXCollections.observableArrayList(fieldsString));
         selectFieldCombobox.setEditable(true);
         builder.add(selectFieldCombobox, 1, 1);
 
         formattersCombobox = new ComboBox<>(FXCollections.observableArrayList(availableFormatters));
         new ViewModelListCellFactory<Formatter>()
                 .withText(Formatter::getName)
-                .withTooltip(Formatter::getDescription)
+                .withStringTooltip(Formatter::getDescription)
                 .install(formattersCombobox);
         EasyBind.subscribe(formattersCombobox.valueProperty(), e -> updateDescription());
         builder.add(formattersCombobox, 3, 1);
@@ -217,8 +219,8 @@ public class FieldFormatterCleanupsPanel extends GridPane {
 
     private FieldFormatterCleanup getFieldFormatterCleanup() {
         Formatter selectedFormatter = formattersCombobox.getValue();
-        String fieldKey = selectFieldCombobox.getValue();
-        return new FieldFormatterCleanup(fieldKey, selectedFormatter);
+        Field field = FieldFactory.parseField(selectFieldCombobox.getSelectionModel().getSelectedItem());
+        return new FieldFormatterCleanup(field, selectedFormatter);
     }
 
     class EnablementStatusListener<T> implements ChangeListener<T> {
@@ -242,5 +244,4 @@ public class FieldFormatterCleanupsPanel extends GridPane {
             setStatus(cleanupEnabled.isSelected());
         }
     }
-
 }

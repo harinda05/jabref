@@ -12,7 +12,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.eventbus.Subscribe;
 
-
 /**
  * Caches the generated Citations for quicker access
  * {@link CitationStyleGenerator} generates the citation with JavaScript which may take some time
@@ -21,42 +20,36 @@ public class CitationStyleCache {
 
     private static final int CACHE_SIZE = 1024;
 
-    private CitationStyle citationStyle;
+    private PreviewLayout citationStyle;
     private final LoadingCache<BibEntry, String> citationStyleCache;
 
-
-    public CitationStyleCache(BibDatabaseContext bibDatabaseContext) {
-        this(bibDatabaseContext, CitationStyle.getDefault());
-    }
-
-    public CitationStyleCache(BibDatabaseContext bibDatabaseContext, CitationStyle citationStyle) {
-        this.citationStyle = Objects.requireNonNull(citationStyle);
+    public CitationStyleCache(BibDatabaseContext database) {
         citationStyleCache = CacheBuilder.newBuilder().maximumSize(CACHE_SIZE).build(new CacheLoader<BibEntry, String>() {
             @Override
             public String load(BibEntry entry) {
-                return CitationStyleGenerator.generateCitation(entry, getCitationStyle().getSource(), CitationStyleOutputFormat.HTML);
+                if (citationStyle != null) {
+                    return citationStyle.generatePreview(entry, database.getDatabase());
+                } else {
+                    return "";
+                }
             }
         });
-        bibDatabaseContext.getDatabase().registerListener(new BibDatabaseEntryListener());
+        database.getDatabase().registerListener(new BibDatabaseEntryListener());
     }
 
     /**
-     * returns the citation for the given BibEntry and the set CitationStyle
+     * Returns the citation for the given entry.
      */
     public String getCitationFor(BibEntry entry) {
         return citationStyleCache.getUnchecked(entry);
     }
 
-    public void setCitationStyle(CitationStyle citationStyle) {
+    public void setCitationStyle(PreviewLayout citationStyle) {
         Objects.requireNonNull(citationStyle);
         if (!this.citationStyle.equals(citationStyle)) {
             this.citationStyle = citationStyle;
             this.citationStyleCache.invalidateAll();
         }
-    }
-
-    public CitationStyle getCitationStyle() {
-        return this.citationStyle;
     }
 
     private class BibDatabaseEntryListener {

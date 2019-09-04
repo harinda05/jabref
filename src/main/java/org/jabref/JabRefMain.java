@@ -8,6 +8,7 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import org.jabref.cli.ArgumentProcessor;
+import org.jabref.cli.JabRefCLI;
 import org.jabref.gui.FXDialog;
 import org.jabref.gui.remote.JabRefMessageHandler;
 import org.jabref.logic.journals.JournalAbbreviationLoader;
@@ -22,11 +23,10 @@ import org.jabref.logic.util.BuildInfo;
 import org.jabref.logic.util.JavaVersion;
 import org.jabref.logic.util.OS;
 import org.jabref.migrations.PreferencesMigrations;
-import org.jabref.model.EntryTypes;
 import org.jabref.model.database.BibDatabaseMode;
-import org.jabref.model.entry.InternalBibtexFields;
 import org.jabref.preferences.JabRefPreferences;
 
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,19 +63,26 @@ public class JabRefMain extends Application {
 
             applyPreferences(preferences);
 
-            // Process arguments
-            ArgumentProcessor argumentProcessor = new ArgumentProcessor(arguments, ArgumentProcessor.Mode.INITIAL_START);
+            try {
+                // Process arguments
+                ArgumentProcessor argumentProcessor = new ArgumentProcessor(arguments, ArgumentProcessor.Mode.INITIAL_START);
+                // Check for running JabRef
+                if (!handleMultipleAppInstances(arguments) || argumentProcessor.shouldShutDown()) {
+                    Platform.exit();
+                    return;
+                }
 
-            // Check for running JabRef
-            if (!handleMultipleAppInstances(arguments) || argumentProcessor.shouldShutDown()) {
+                // If not, start GUI
+                new JabRefGUI(mainStage, argumentProcessor.getParserResults(), argumentProcessor.isBlank());
+            } catch (ParseException e) {
+                LOGGER.error("Problem parsing arguments", e);
+
+                JabRefCLI.printUsage();
                 Platform.exit();
-                return;
             }
-
-            // If not, start GUI
-            new JabRefGUI(mainStage, argumentProcessor.getParserResults(), argumentProcessor.isBlank());
         } catch (Exception ex) {
             LOGGER.error("Unexpected exception", ex);
+            Platform.exit();
         }
     }
   
@@ -153,21 +160,14 @@ public class JabRefMain extends Application {
     }
 
     private static void applyPreferences(JabRefPreferences preferences) {
-        // Update handling of special fields based on preferences
-        InternalBibtexFields.updateSpecialFields(Globals.prefs.getBoolean(JabRefPreferences.SERIALIZESPECIALFIELDS));
-        // Update name of the time stamp field based on preferences
-        InternalBibtexFields.updateTimeStampField(Globals.prefs.getTimestampPreferences().getTimestampField());
-        // Update which fields should be treated as numeric, based on preferences:
-        InternalBibtexFields.setNumericFields(Globals.prefs.getStringList(JabRefPreferences.NUMERIC_FIELDS));
-
         // Read list(s) of journal names and abbreviations
         Globals.journalAbbreviationLoader = new JournalAbbreviationLoader();
 
         // Build list of Import and Export formats
         Globals.IMPORT_FORMAT_READER.resetImportFormats(Globals.prefs.getImportFormatPreferences(),
                                                         Globals.prefs.getXMPPreferences(), Globals.getFileUpdateMonitor());
-        EntryTypes.loadCustomEntryTypes(preferences.loadCustomEntryTypes(BibDatabaseMode.BIBTEX),
-                                        preferences.loadCustomEntryTypes(BibDatabaseMode.BIBLATEX));
+        Globals.entryTypesManager.addCustomizedEntryTypes(preferences.loadBibEntryTypes(BibDatabaseMode.BIBTEX),
+                preferences.loadBibEntryTypes(BibDatabaseMode.BIBLATEX));
         Globals.exportFactory = Globals.prefs.getExporterFactory(Globals.journalAbbreviationLoader);
 
         // Initialize protected terms loader

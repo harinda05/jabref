@@ -3,11 +3,20 @@
 [![Build Status](https://travis-ci.org/JabRef/jabref.svg?branch=master)](https://travis-ci.org/JabRef/jabref)
 [![codecov.io](https://codecov.io/github/JabRef/jabref/coverage.svg?branch=master)](https://codecov.io/github/JabRef/jabref?branch=master)
 [![Donation](https://img.shields.io/badge/donate%20to-jabref-orange.svg)](https://donations.jabref.org)
+[![Crowdin](https://d322cqt584bo4o.cloudfront.net/jabref/localized.svg)](https://crowdin.com/project/jabref)
 
 JabRef is an open-source, cross-platform citation and reference management tool licensed under the  [MIT license](https://tldrlegal.com/license/mit-license).
 
 Stay on top of your literature: JabRef helps you to collect and organize sources, find the paper you need and discover the latest research.
 ![main table](https://www.jabref.org/img/JabRef-4-0-MainTable.png)
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Bug Reports, Suggestions, Other Feedback](#bug-reports-suggestions-other-feedback)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements) / [License](#license)
 
 ## Features
 
@@ -53,7 +62,7 @@ JabRef supports you in every step of your research work.
 Fresh development builds are available at [builds.jabref.org](https://builds.jabref.org/master/).
 The [latest stable release is available at FossHub](https://www.fosshub.com/JabRef.html).
 
-JabRef runs on any system equipped with the Java Virtual Machine (1.8), which can be downloaded at no cost from [Oracle](http://www.oracle.com/technetwork/java/javase/downloads/index.html). Note that Java 9 is currently not supported.
+JabRef runs on any system equipped with the Java Virtual Machine (Java 11 or higher), which can be downloaded at no cost from [AdoptOpenDJK](https://adoptopenjdk.net/).
 From JabRef 4.0 onwards, [JavaFX] support has to be installed.
  - Windows: JabRef offers an installer, which also adds a shortcut to JabRef to your start menu. Please also see our [Windows FAQ](https://help.jabref.org/en/FAQwindows)
  - Linux: Please see our [Installation Guide](http://help.jabref.org/en/Installation).
@@ -82,11 +91,11 @@ An explanation of donation possibilities and usage of donations is available at 
 
 > Not a programmer? [Learn how to help.](http://contribute.jabref.org)
 
-Want to be part of a free and open-source project that tens of thousands scientist use every day?
-Check out our [issue tracker](https://github.com/JabRef/jabref/issues) to find something to work on.
-You are also welcome to contribute new features.
-To get your code included into JabRef, just fork JabRef and create a pull request.
-For details have a look at our [guidelines for contributing](CONTRIBUTING.md).
+Want to be part of a free and open-source project that tens of thousands scientist use every day? Check out the ways you can contribute, below:
+- For details on how to contribute, have a look at our [guidelines for contributing](CONTRIBUTING.md).
+- You are welcome to contribute new features. To get your code included into JabRef, just [fork](https://help.github.com/en/articles/fork-a-repo) the JabRef repository, make your changes, and create a [pull request](https://help.github.com/en/articles/about-pull-requests).
+- To work on existing JabRef issues, check out our [issue tracker](https://github.com/JabRef/jabref/issues). New to open source contributing? Look for issues with the ["good first issue"](https://github.com/JabRef/jabref/labels/good%20first%20issue) label to get started.
+
 We view pull requests as a collaborative process.
 Submit a pull request early to get feedback from the team on work in progress.
 We will discuss improvements with you and agree to merge them once the [developers](https://github.com/JabRef/jabref/blob/master/DEVELOPERS) approve.

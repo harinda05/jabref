@@ -29,6 +29,8 @@ import org.jabref.Globals;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.DragAndDropDataFormats;
 import org.jabref.gui.autocompleter.AutoCompleteSuggestionProvider;
+import org.jabref.gui.copyfiles.CopySingleFileAction;
+import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.keyboard.KeyBinding;
 import org.jabref.gui.util.TaskExecutor;
 import org.jabref.gui.util.ViewModelListCellFactory;
@@ -37,34 +39,38 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
+import org.jabref.model.entry.field.Field;
 import org.jabref.preferences.JabRefPreferences;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIcon;
-import de.jensd.fx.glyphs.materialdesignicons.utils.MaterialDesignIconFactory;
 
 public class LinkedFilesEditor extends HBox implements FieldEditorFX {
 
     @FXML private final LinkedFilesEditorViewModel viewModel;
     @FXML private ListView<LinkedFileViewModel> listView;
 
-    public LinkedFilesEditor(String fieldName, DialogService dialogService, BibDatabaseContext databaseContext, TaskExecutor taskExecutor, AutoCompleteSuggestionProvider<?> suggestionProvider,
+    private final DialogService dialogService;
+    private final BibDatabaseContext databaseContext;
+
+    public LinkedFilesEditor(Field field, DialogService dialogService, BibDatabaseContext databaseContext, TaskExecutor taskExecutor, AutoCompleteSuggestionProvider<?> suggestionProvider,
                              FieldCheckers fieldCheckers,
                              JabRefPreferences preferences) {
-        this.viewModel = new LinkedFilesEditorViewModel(fieldName, suggestionProvider, dialogService, databaseContext, taskExecutor, fieldCheckers, preferences);
+        this.viewModel = new LinkedFilesEditorViewModel(field, suggestionProvider, dialogService, databaseContext, taskExecutor, fieldCheckers, preferences);
+        this.dialogService = dialogService;
+        this.databaseContext = databaseContext;
 
         ViewLoader.view(this)
                   .root(this)
                   .load();
 
         ViewModelListCellFactory<LinkedFileViewModel> cellFactory = new ViewModelListCellFactory<LinkedFileViewModel>()
-                .withTooltip(LinkedFileViewModel::getDescription)
-                .withGraphic(LinkedFilesEditor::createFileDisplay)
-                .withContextMenu(this::createContextMenuForFile)
-                .withOnMouseClickedEvent(this::handleItemMouseClick)
-                .setOnDragDetected(this::handleOnDragDetected)
-                .setOnDragDropped(this::handleOnDragDropped)
-                .setOnDragOver(this::handleOnDragOver);
+                   .withStringTooltip(LinkedFileViewModel::getDescription)
+                   .withGraphic(LinkedFilesEditor::createFileDisplay)
+                   .withContextMenu(this::createContextMenuForFile)
+                   .withOnMouseClickedEvent(this::handleItemMouseClick)
+                   .setOnDragDetected(this::handleOnDragDetected)
+                   .setOnDragDropped(this::handleOnDragDropped)
+                   .setOnDragOver(this::handleOnDragOver);
 
         listView.setCellFactory(cellFactory);
 
@@ -135,13 +141,13 @@ public class LinkedFilesEditor extends HBox implements FieldEditorFX {
         info.setStyle("-fx-padding: 0.5em 0 0.5em 0;"); // To align with buttons below which also have 0.5em padding
         info.getChildren().setAll(icon, link, desc, progressIndicator);
 
-        Button acceptAutoLinkedFile = MaterialDesignIconFactory.get().createIconButton(MaterialDesignIcon.BRIEFCASE_CHECK);
+        Button acceptAutoLinkedFile = IconTheme.JabRefIcons.AUTO_LINKED_FILE.asButton();
         acceptAutoLinkedFile.setTooltip(new Tooltip(Localization.lang("This file was found automatically. Do you want to link it to this entry?")));
         acceptAutoLinkedFile.visibleProperty().bind(linkedFile.isAutomaticallyFoundProperty());
         acceptAutoLinkedFile.setOnAction(event -> linkedFile.acceptAsLinked());
         acceptAutoLinkedFile.getStyleClass().setAll("icon-button");
 
-        Button writeXMPMetadata = MaterialDesignIconFactory.get().createIconButton(MaterialDesignIcon.IMPORT);
+        Button writeXMPMetadata = IconTheme.JabRefIcons.IMPORT.asButton();
         writeXMPMetadata.setTooltip(new Tooltip(Localization.lang("Write BibTeXEntry as XMP-metadata to PDF.")));
         writeXMPMetadata.visibleProperty().bind(linkedFile.canWriteXMPMetadataProperty());
         writeXMPMetadata.setOnAction(event -> linkedFile.writeXMPMetadata());
@@ -218,9 +224,13 @@ public class LinkedFilesEditor extends HBox implements FieldEditorFX {
         MenuItem download = new MenuItem(Localization.lang("Download file"));
         download.setOnAction(event -> linkedFile.download());
 
-        MenuItem renameFile = new MenuItem(Localization.lang("Rename file"));
-        renameFile.setOnAction(event -> linkedFile.rename());
+        MenuItem renameFile = new MenuItem(Localization.lang("Rename file to defined pattern"));
+        renameFile.setOnAction(event -> linkedFile.renameToSuggestion());
         renameFile.setDisable(linkedFile.getFile().isOnlineLink() || linkedFile.isGeneratedNameSameAsOriginal());
+
+        MenuItem renameFileName = new MenuItem(Localization.lang("Rename file to a given name"));
+        renameFileName.setOnAction(event -> linkedFile.askForNameAndRename());
+        renameFileName.setDisable(linkedFile.getFile().isOnlineLink());
 
         MenuItem moveFile = new MenuItem(Localization.lang("Move file to file directory"));
         moveFile.setOnAction(event -> linkedFile.moveToDefaultDirectory());
@@ -229,6 +239,10 @@ public class LinkedFilesEditor extends HBox implements FieldEditorFX {
         MenuItem renameAndMoveFile = new MenuItem(Localization.lang("Move file to file directory and rename file"));
         renameAndMoveFile.setOnAction(event -> linkedFile.moveToDefaultDirectoryAndRename());
         renameAndMoveFile.setDisable(linkedFile.getFile().isOnlineLink() || linkedFile.isGeneratedPathSameAsOriginal());
+
+        MenuItem copyLinkedFile = new MenuItem(Localization.lang("Copy linked file to folder..."));
+        copyLinkedFile.setOnAction(event -> new CopySingleFileAction(linkedFile.getFile(), dialogService, databaseContext).copyFile());
+        copyLinkedFile.setDisable(linkedFile.getFile().isOnlineLink());
 
         MenuItem deleteFile = new MenuItem(Localization.lang("Permanently delete local file"));
         deleteFile.setOnAction(event -> viewModel.deleteFile(linkedFile));
@@ -244,7 +258,7 @@ public class LinkedFilesEditor extends HBox implements FieldEditorFX {
         if (linkedFile.getFile().isOnlineLink()) {
             menu.getItems().add(download);
         }
-        menu.getItems().addAll(renameFile, moveFile, renameAndMoveFile, deleteLink, deleteFile);
+        menu.getItems().addAll(renameFile, renameFileName, moveFile, renameAndMoveFile, copyLinkedFile, deleteLink, deleteFile);
 
         return menu;
     }

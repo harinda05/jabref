@@ -1,5 +1,8 @@
 package org.jabref.gui.preferences;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -11,7 +14,7 @@ import javafx.scene.layout.Pane;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.preferences.JabRefPreferences;
 
-class TablePrefsTab extends Pane implements PrefsTab {
+class TablePrefsTab extends Pane implements PreferencesTab {
 
     private final JabRefPreferences prefs;
 
@@ -35,14 +38,6 @@ class TablePrefsTab extends Pane implements PrefsTab {
      */
     public TablePrefsTab(JabRefPreferences prefs) {
         this.prefs = prefs;
-        /**
-         * Added Bibtexkey to combobox.
-         *
-         * [ 1540646 ] default sort order: bibtexkey
-         *
-         * http://sourceforge.net/tracker/index.php?func=detail&aid=1540646&group_id=92314&atid=600306
-         */
-
         autoResizeMode = new CheckBox(Localization.lang("Fit table horizontally on screen"));
         namesAsIs = new RadioButton(Localization.lang("Show names unchanged"));
         namesFf = new RadioButton(Localization.lang("Show 'Firstname Lastname'"));
@@ -139,4 +134,7 @@ class TablePrefsTab extends Pane implements PrefsTab {
     public String getTabName() {
         return Localization.lang("Entry table");
     }
+
+    @Override
+    public List<String> getRestartWarnings() { return new ArrayList<>(); }
 }
